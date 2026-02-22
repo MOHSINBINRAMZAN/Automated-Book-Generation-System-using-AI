@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Create Book - Book Generator{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>📖 Create New Book</h2>
+    
+    <form method="POST" action="{{ url_for('create_book') }}">
+        <div>
+            <label for="title">Book Title *</label>
+            <input type="text" id="title" name="title" required 
+                   placeholder="Enter the book title">
+        </div>
+        
+        <div>
+            <label for="notes">Notes for Outline Generation *</label>
+            <textarea id="notes" name="notes" rows="6" required
+                      placeholder="Describe what the book should cover, target audience, key topics, chapters to include, tone/style preferences, etc."></textarea>
+            <small style="color: #666;">
+                These notes guide the AI in generating the book outline. Be as detailed as possible.
+            </small>
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">Create Book</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h2>💡 Tips for Better Results</h2>
+    <ul style="padding-left: 20px;">
+        <li><strong>Be specific:</strong> Include the target audience (beginners, experts, etc.)</li>
+        <li><strong>List key topics:</strong> Mention specific subjects each chapter should cover</li>
+        <li><strong>Set the tone:</strong> Formal, conversational, technical, etc.</li>
+        <li><strong>Provide structure hints:</strong> Number of chapters, approximate length</li>
+        <li><strong>Include examples:</strong> Reference similar books or styles you like</li>
+    </ul>
+    
+    <h3 style="margin-top: 20px;">Example:</h3>
+    <div class="content-preview">
+Create a comprehensive guide to Python programming for beginners.
+
+Target audience: Complete beginners with no coding experience
+Tone: Friendly, encouraging, with lots of examples
+Length: 10-12 chapters
+
+Topics to cover:
+- Python installation and setup
+- Variables, data types, and operators
+- Control flow (if/else, loops)
+- Functions and modules
+- Lists, dictionaries, and data structures
+- Object-oriented programming basics
+- File handling
+- Error handling and debugging
+- Introduction to web development (Flask)
+- Final project: Building a simple application
+
+Include practical exercises at the end of each chapter.
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Chapter {{ chapter.chapter_number }} - {{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Chapter {{ chapter.chapter_number }}: {{ chapter.title }}</h2>
+    
+    <div class="info-grid">
+        <div class="info-item">
+            <strong>Status</strong>
+            <span class="status-badge status-{{ chapter.status }}">{{ chapter.status }}</span>
+        </div>
+        <div class="info-item">
+            <strong>Book</strong>
+            <a href="{{ url_for('book_detail', book_id=book.id) }}">{{ book.title }}</a>
+        </div>
+    </div>
+</div>
+
+<!-- CHAPTER CONTENT -->
+<div class="card">
+    <h2>📄 Content</h2>
+    
+    {% if chapter.content %}
+        <div class="content-preview" style="max-height: 600px;">{{ chapter.content }}</div>
+        
+        {% if chapter.summary %}
+        <h3 style="margin-top: 20px;">📝 Summary (for context chaining)</h3>
+        <div class="content-preview" style="max-height: 200px;">{{ chapter.summary }}</div>
+        {% endif %}
+    {% else %}
+        <p>No content generated yet.</p>
+        
+        <form method="POST" action="{{ url_for('generate_chapter', book_id=book.id, chapter_num=chapter.chapter_number) }}" class="actions">
+            <button type="submit" class="btn btn-primary">🤖 Generate Chapter</button>
+        </form>
+    {% endif %}
+</div>
+
+<!-- FEEDBACK & ACTIONS -->
+{% if chapter.content and chapter.status != 'approved' %}
+<div class="card">
+    <h2>📝 Feedback & Actions</h2>
+    
+    <form method="POST" action="{{ url_for('chapter_feedback', book_id=book.id, chapter_num=chapter.chapter_number) }}">
+        <label for="notes">Feedback Notes (for regeneration)</label>
+        <textarea id="notes" name="notes" rows="4" 
+                  placeholder="Add feedback to regenerate this chapter...">{{ chapter.chapter_notes or '' }}</textarea>
+        <div class="actions">
+            <button type="submit" class="btn btn-warning">Save Feedback</button>
+        </div>
+    </form>
+    
+    <div class="actions" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+        {% if chapter.chapter_notes %}
+        <form method="POST" action="{{ url_for('regenerate_chapter', book_id=book.id, chapter_num=chapter.chapter_number) }}" style="display: inline;">
+            <button type="submit" class="btn btn-primary">🔄 Regenerate Chapter</button>
+        </form>
+        {% endif %}
+        
+        <form method="POST" action="{{ url_for('approve_chapter', book_id=book.id, chapter_num=chapter.chapter_number) }}" style="display: inline;">
+            <button type="submit" class="btn btn-success">✅ Approve Chapter</button>
+        </form>
+    </div>
+</div>
+{% elif chapter.status == 'approved' %}
+<div class="card">
+    <div style="color: #28a745; text-align: center; padding: 20px;">
+        <h2>✅ Chapter Approved</h2>
+        <p>This chapter has been approved and is ready for final compilation.</p>
+    </div>
+</div>
+{% endif %}
+
+<div class="actions">
+    <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-secondary">← Back to Book</a>
+    
+    {% if chapter.chapter_number > 1 %}
+    <a href="{{ url_for('chapter_detail', book_id=book.id, chapter_num=chapter.chapter_number - 1) }}" 
+       class="btn btn-secondary">← Previous Chapter</a>
+    {% endif %}
+    
+    <a href="{{ url_for('chapter_detail', book_id=book.id, chapter_num=chapter.chapter_number + 1) }}" 
+       class="btn btn-secondary">Next Chapter →</a>
+</div>
+{% endblock %}

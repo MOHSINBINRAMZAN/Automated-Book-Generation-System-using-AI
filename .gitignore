@@ -1,0 +1,42 @@
+# Environment and secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Output files
+output/*.docx
+output/*.pdf
+output/*.txt
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.bak

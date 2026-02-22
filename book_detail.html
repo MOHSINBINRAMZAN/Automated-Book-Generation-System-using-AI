@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - Book Generator{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>📖 {{ book.title }}</h2>
+    
+    <div class="info-grid">
+        <div class="info-item">
+            <strong>Stage</strong>
+            {{ status.stage | replace('_', ' ') | title }}
+        </div>
+        <div class="info-item">
+            <strong>Output Status</strong>
+            <span class="status-badge status-{{ status.output_status }}">
+                {{ status.output_status }}
+            </span>
+        </div>
+        <div class="info-item">
+            <strong>Outline Status</strong>
+            {{ status.outline_status }}
+        </div>
+        <div class="info-item">
+            <strong>Next Action</strong>
+            {{ status.next_action }}
+        </div>
+    </div>
+    
+    {% if status.output_file %}
+    <div style="background: #d4edda; padding: 15px; border-radius: 5px; margin-top: 15px;">
+        <strong>✅ Output File:</strong> {{ status.output_file }}
+    </div>
+    {% endif %}
+</div>
+
+<!-- OUTLINE SECTION -->
+<div class="card">
+    <h2>📋 Outline</h2>
+    
+    {% if not book.outline %}
+        <p>No outline generated yet.</p>
+        
+        <h3 style="margin-top: 15px;">Input Notes:</h3>
+        <div class="content-preview">{{ book.notes_on_outline_before or 'No notes provided' }}</div>
+        
+        <form method="POST" action="{{ url_for('generate_outline', book_id=book.id) }}" class="actions">
+            <button type="submit" class="btn btn-primary">🤖 Generate Outline</button>
+        </form>
+    {% else %}
+        <div class="content-preview">{{ book.outline }}</div>
+        
+        {% if status.outline_status != 'no_notes_needed' %}
+            <h3 style="margin-top: 20px;">📝 Add Feedback</h3>
+            <form method="POST" action="{{ url_for('outline_feedback', book_id=book.id) }}">
+                <textarea name="notes" rows="4" placeholder="Add feedback notes to regenerate the outline...">{{ book.notes_on_outline_after or '' }}</textarea>
+                <div class="actions">
+                    <button type="submit" class="btn btn-warning">Save Feedback</button>
+                    {% if book.notes_on_outline_after %}
+                    <form method="POST" action="{{ url_for('regenerate_outline', book_id=book.id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-primary">🔄 Regenerate Outline</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </form>
+            
+            <form method="POST" action="{{ url_for('approve_outline', book_id=book.id) }}" class="actions">
+                <button type="submit" class="btn btn-success">✅ Approve Outline & Create Chapters</button>
+            </form>
+        {% else %}
+            <p style="color: #28a745; margin-top: 15px;">✅ Outline approved</p>
+        {% endif %}
+    {% endif %}
+</div>
+
+<!-- CHAPTERS SECTION -->
+{% if chapters %}
+<div class="card">
+    <h2>📑 Chapters</h2>
+    
+    <div class="actions" style="margin-bottom: 20px;">
+        <form method="POST" action="{{ url_for('generate_all_chapters', book_id=book.id) }}" style="display: inline;">
+            <button type="submit" class="btn btn-primary">🤖 Generate All Chapters</button>
+            <label style="margin-left: 10px;">
+                <input type="checkbox" name="auto_approve"> Auto-approve
+            </label>
+        </form>
+    </div>
+    
+    <div class="grid">
+        {% for ch in chapters %}
+        <div class="chapter-card {{ ch.status }}">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong>Chapter {{ ch.chapter_number }}</strong>
+                <span class="status-badge status-{{ ch.status }}">{{ ch.status }}</span>
+            </div>
+            <p style="margin: 10px 0;">{{ ch.title }}</p>
+            <div class="actions">
+                <a href="{{ url_for('chapter_detail', book_id=book.id, chapter_num=ch.chapter_number) }}" 
+                   class="btn btn-sm btn-secondary">View</a>
+                
+                {% if ch.status == 'pending' %}
+                <form method="POST" action="{{ url_for('generate_chapter', book_id=book.id, chapter_num=ch.chapter_number) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-primary">Generate</button>
+                </form>
+                {% elif ch.status == 'review' %}
+                <form method="POST" action="{{ url_for('approve_chapter', book_id=book.id, chapter_num=ch.chapter_number) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- COMPILATION SECTION -->
+{% if status.stage in ['compilation', 'completed', 'final_review'] %}
+<div class="card">
+    <h2>📦 Final Compilation</h2>
+    
+    {% if status.output_status == 'completed' %}
+        <p style="color: #28a745;">✅ Book has been compiled successfully!</p>
+        {% if status.output_file %}
+        <p><strong>Output:</strong> {{ status.output_file }}</p>
+        {% endif %}
+    {% else %}
+        <form method="POST" action="{{ url_for('compile_book', book_id=book.id) }}">
+            <p>Select output formats:</p>
+            <label style="margin-right: 15px;">
+                <input type="checkbox" name="formats" value="docx" checked> DOCX
+            </label>
+            <label style="margin-right: 15px;">
+                <input type="checkbox" name="formats" value="pdf" checked> PDF
+            </label>
+            <label>
+                <input type="checkbox" name="formats" value="txt" checked> TXT
+            </label>
+            <div class="actions">
+                <button type="submit" class="btn btn-success">📥 Compile Book</button>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- AUTO WORKFLOW -->
+<div class="card">
+    <h2>🚀 Quick Actions</h2>
+    <form method="POST" action="{{ url_for('auto_generate', book_id=book.id) }}">
+        <p>Run the complete automated workflow:</p>
+        <label>
+            <input type="checkbox" name="auto_approve"> Auto-approve all stages (for testing)
+        </label>
+        <div class="actions">
+            <button type="submit" class="btn btn-warning">⚡ Run Full Automated Workflow</button>
+        </div>
+    </form>
+</div>
+
+<!-- LOGS -->
+{% if logs %}
+<div class="card">
+    <h2>📜 Recent Activity</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Event</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.created_at[:19] if log.created_at else 'N/A' }}</td>
+                <td>{{ log.event_type }}</td>
+                <td>{{ log.message[:50] }}{% if log.message|length > 50 %}...{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<div class="actions">
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Dashboard</a>
+</div>
+{% endblock %}

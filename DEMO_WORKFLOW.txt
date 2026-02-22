@@ -1,0 +1,149 @@
+================================================================================
+           AUTOMATED BOOK GENERATION SYSTEM - DEMO WORKFLOW
+================================================================================
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+PART 1: PROJECT EXPLANATION (Video ke shuru mein explain karo)
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+WHAT IS THIS PROJECT?
+"Yeh ek Automated Book Generation System hai jo AI use karta hai 
+complete books likhne ke liye - with human feedback at every step."
+
+THREE STAGES:
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  STAGE 1    │────▶│  STAGE 2    │────▶│  STAGE 3    │
+│  OUTLINE    │     │  CHAPTERS   │     │  COMPILE    │
+└─────────────┘     └─────────────┘     └─────────────┘
+      │                   │                   │
+      ▼                   ▼                   ▼
+ Human Review        Human Review        Export Files
+ & Feedback          & Feedback         (DOCX/PDF/TXT)
+
+TECHNOLOGIES USED:
+• LLM: TinyLlama (local, FREE) - AI text generation
+• Database: SQLite - books aur chapters store karta hai
+• Backend: Python - main logic
+• Web UI: Flask - browser interface
+• Export: python-docx, reportlab - DOCX/PDF files banata hai
+
+KEY FEATURES:
+• Human-in-the-loop - har stage pe human approve karta hai
+• Context chaining - har chapter previous chapters ko jaanta hai
+• Multiple LLM support - OpenAI, Gemini, Ollama sab kaam karte hain
+
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+PART 2: DEMO COMMANDS (Yeh commands terminal mein run karo)
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+STEP 1: VERIFY SETUP
+--------------------------------------------------------------------------------
+Command:
+& "D:\Book Generator\.venv\Scripts\python.exe" verify_setup.py
+
+Explain: "Pehle verify karte hain ke sab packages installed hain"
+
+
+STEP 2: INITIALIZE DATABASE  
+--------------------------------------------------------------------------------
+Command:
+& "D:\Book Generator\.venv\Scripts\python.exe" main.py init
+
+Explain: "Database initialize kar rahe hain - SQLite use ho rahi hai"
+
+
+STEP 3: CREATE NEW BOOK
+--------------------------------------------------------------------------------
+Command:
+& "D:\Book Generator\.venv\Scripts\python.exe" main.py create "The Art of Leadership" "A guide on leadership skills and team management"
+
+Explain: "Naya book create kar rahe hain with title aur notes"
+
+
+STEP 4: GENERATE OUTLINE (AI generates)
+--------------------------------------------------------------------------------
+Command:
+& "D:\Book Generator\.venv\Scripts\python.exe" main.py outline 2
+
+Explain: "AI outline generate kar raha hai - TinyLlama locally run ho raha hai"
+
+
+STEP 5: CHECK STATUS
+--------------------------------------------------------------------------------
+Command:
+& "D:\Book Generator\.venv\Scripts\python.exe" main.py status 2
+
+Explain: "Book ka status check kar rahe hain - outline ready hai"
+
+
+STEP 6: APPROVE OUTLINE (Human feedback)
+--------------------------------------------------------------------------------
+Command:
+& "D:\Book Generator\.venv\Scripts\python.exe" main.py approve-outline 2
+
+Explain: "Human ne outline approve kiya - yeh human-in-the-loop feature hai"
+
+
+STEP 7: GENERATE CHAPTERS (AI generates)
+--------------------------------------------------------------------------------
+Command:
+& "D:\Book Generator\.venv\Scripts\python.exe" main.py chapters 2
+
+Explain: "AI sab chapters likh raha hai - context chaining use ho rahi hai"
+
+
+STEP 8: COMPILE FINAL BOOK
+--------------------------------------------------------------------------------
+Command:
+& "D:\Book Generator\.venv\Scripts\python.exe" main.py compile 2
+
+Explain: "Final book compile ho rahi hai - DOCX, PDF, TXT files ban rahe hain"
+
+
+STEP 9: SHOW OUTPUT FILES
+--------------------------------------------------------------------------------
+Command:
+Get-ChildItem "D:\Book Generator\output"
+
+Explain: "Yeh hain final output files - Word, PDF aur Text format mein"
+
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+PART 3: FILES TO SHOW (Code files dikhao aur explain karo)
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+FILE 1: main.py
+"Yeh CLI entry point hai - sab commands yahan se handle hote hain"
+
+FILE 2: orchestrator.py  
+"Yeh main workflow controller hai - sab modules ko coordinate karta hai"
+
+FILE 3: modules/llm.py
+"LLM integration - OpenAI, Gemini, Ollama sab yahan hai"
+
+FILE 4: modules/stages.py
+"Outline, Chapter, Compilation - teen stages ka code yahan hai"
+
+FILE 5: modules/database.py
+"SQLite database - books aur chapters store hote hain"
+
+FILE 6: book_generator.db
+"Yeh actual database file hai - SQLite"
+
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+PART 4: OPTIONAL - WEB UI DEMO
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+Command:
+& "D:\Book Generator\.venv\Scripts\python.exe" web_ui.py
+
+Then open: http://localhost:5000
+
+"Yeh Web UI hai - same kaam browser se bhi ho sakta hai"
+
+
+================================================================================
+                              GOOD LUCK! 🎬
+================================================================================

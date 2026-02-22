@@ -1,0 +1,10 @@
+[
+    {
+        "title": "Python Programming: From Zero to Hero",
+        "notes_on_outline_before": "Create a comprehensive Python programming guide for absolute beginners. Target audience: People with no coding experience who want to learn programming. Include chapters on: 1) Getting started with Python (installation, IDE setup), 2) Variables and data types, 3) Control flow (if/else, loops), 4) Functions, 5) Data structures (lists, dictionaries), 6) Object-oriented programming basics, 7) File handling, 8) Error handling, 9) Working with APIs, 10) Final project - building a simple application. Use a friendly, encouraging tone with lots of practical examples."
+    },
+    {
+        "title": "The Complete Guide to Machine Learning",
+        "notes_on_outline_before": "Create a comprehensive machine learning guide for developers and data enthusiasts. Target audience: Programmers with basic Python knowledge who want to learn ML. Cover: 1) Introduction to ML concepts, 2) Python libraries for ML (NumPy, Pandas, Scikit-learn), 3) Supervised learning (regression, classification), 4) Unsupervised learning (clustering, dimensionality reduction), 5) Neural networks basics, 6) Deep learning with TensorFlow/PyTorch, 7) Natural Language Processing, 8) Computer Vision, 9) Model deployment, 10) ML best practices and ethics. Include code examples and real-world case studies."
+    }
+]

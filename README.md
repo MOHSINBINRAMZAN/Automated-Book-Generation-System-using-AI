@@ -140,6 +140,238 @@ python main.py auto 1 --auto-approve
 
 ## 📖 Workflow Stages
 
+### Stage 1: Outline Generation
+
+```
+Input Required:
+  - title (mandatory)
+  - notes_on_outline_before (required)
+
+Process:
+  1. Generate outline using LLM
+  2. Store in database for review
+  3. Editor adds notes_on_outline_after (optional)
+  4. Set status_outline_notes:
+     - 'yes' → wait for notes, can regenerate
+     - 'no_notes_needed' → proceed to chapters
+     - 'no'/empty → pause
+
+Commands:
+  python main.py outline <book_id>
+  python main.py outline-feedback <book_id> "feedback notes"
+  python main.py regen-outline <book_id>
+  python main.py approve-outline <book_id>
+```
+
+### Stage 2: Chapter Generation
+
+```
+Process:
+  1. Parse outline to extract chapters
+  2. Generate each chapter with context:
+     - Previous chapter summaries (context chaining)
+     - Chapter-specific notes from editor
+  3. Editor reviews each chapter
+  4. Set chapter status:
+     - 'review' → awaiting review
+     - 'approved' → ready for next chapter
+     - Regenerate if notes provided
+
+Commands:
+  python main.py chapter <book_id> <chapter_num>
+  python main.py all-chapters <book_id>
+  python main.py chapter-feedback <book_id> <chapter_num> "notes"
+  python main.py regen-chapter <book_id> <chapter_num>
+  python main.py approve-chapter <book_id> <chapter_num>
+```
+
+### Stage 3: Final Compilation
+
+```
+Prerequisites:
+  - All chapters must be approved
+  - final_review_notes_status = 'no_notes_needed' OR notes provided
+
+Process:
+  1. Compile all chapters in order
+  2. Generate output files (DOCX, PDF, TXT)
+  3. Update book status to 'completed'
+  4. Send completion notification
+
+Commands:
+  python main.py compile <book_id>
+  python main.py compile <book_id> --formats txt docx pdf
+```
+
+## 🔔 Notifications
+
+Configure notifications in `.env`:
+
+### Email (SMTP)
+
+```
+SMTP_ENABLED=true
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+SMTP_FROM_EMAIL=your_email@gmail.com
+SMTP_TO_EMAIL=recipient@example.com
+```
+
+### MS Teams
+
+```
+TEAMS_WEBHOOK_ENABLED=true
+TEAMS_WEBHOOK_URL=https://outlook.office.com/webhook/...
+```
+
+Notification events:
+
+- ✅ Outline ready for review
+- ✅ Chapter ready for review
+- ⏸️ Waiting for notes (paused)
+- ✅ All chapters complete
+- ✅ Final draft compiled
+- ❌ Error occurred
+
+## 🗄️ Database Schema
+
+### Books Table
+
+| Column                    | Type    | Description                   |
+| ------------------------- | ------- | ----------------------------- |
+| id                        | INTEGER | Primary key                   |
+| title                     | TEXT    | Book title                    |
+| notes_on_outline_before   | TEXT    | Pre-outline notes             |
+| outline                   | TEXT    | Generated outline             |
+| notes_on_outline_after    | TEXT    | Post-outline feedback         |
+| status_outline_notes      | TEXT    | yes/no/no_notes_needed        |
+| chapter_notes_status      | TEXT    | yes/no/no_notes_needed        |
+| final_review_notes_status | TEXT    | yes/no/no_notes_needed        |
+| book_output_status        | TEXT    | pending/in_progress/completed |
+| output_file_path          | TEXT    | Path to output file           |
+
+### Chapters Table
+
+| Column         | Type    | Description                        |
+| -------------- | ------- | ---------------------------------- |
+| id             | INTEGER | Primary key                        |
+| book_id        | INTEGER | Foreign key to books               |
+| chapter_number | INTEGER | Chapter order                      |
+| title          | TEXT    | Chapter title                      |
+| content        | TEXT    | Full chapter content               |
+| summary        | TEXT    | Summary for context chaining       |
+| chapter_notes  | TEXT    | Editor feedback                    |
+| status         | TEXT    | pending/generating/review/approved |
+
+## 🔧 CLI Reference
+
+```bash
+# System
+python main.py init              # Initialize database
+python main.py sample            # Create sample input files
+
+# Books
+python main.py create <title> <notes>    # Create new book
+python main.py import <file>             # Import from file
+python main.py list                      # List all books
+python main.py status <id>               # Get book status
+
+# Outline
+python main.py outline <id>              # Generate outline
+python main.py approve-outline <id>      # Approve outline
+python main.py outline-feedback <id> <notes>   # Add feedback
+python main.py regen-outline <id>        # Regenerate outline
+
+# Chapters
+python main.py chapter <id> <num>        # Generate chapter
+python main.py all-chapters <id>         # Generate all chapters
+python main.py approve-chapter <id> <num>      # Approve chapter
+python main.py chapter-feedback <id> <num> <notes>  # Add feedback
+python main.py regen-chapter <id> <num>  # Regenerate chapter
+
+# Compilation
+python main.py compile <id>              # Compile book
+python main.py compile <id> --formats txt docx pdf
+
+# Automation
+python main.py auto <id>                 # Run full workflow
+python main.py auto <id> --auto-approve  # Auto-approve all
+
+# Monitoring
+python main.py logs                      # View all logs
+python main.py logs --book-id <id>       # View book logs
+python main.py pending                   # Check pending actions
+```
+
+## 🔌 Using Supabase (Optional)
+
+1. Create a Supabase project at https://supabase.com
+
+2. Create tables using this SQL:
+
+```sql
+-- Books table
+CREATE TABLE books (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    notes_on_outline_before TEXT DEFAULT '',
+    outline TEXT DEFAULT '',
+    notes_on_outline_after TEXT DEFAULT '',
+    status_outline_notes TEXT DEFAULT 'no',
+    chapter_notes_status TEXT DEFAULT 'no',
+    final_review_notes_status TEXT DEFAULT 'no',
+    final_review_notes TEXT DEFAULT '',
+    book_output_status TEXT DEFAULT 'pending',
+    output_file_path TEXT DEFAULT '',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Chapters table
+CREATE TABLE chapters (
+    id SERIAL PRIMARY KEY,
+    book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+    chapter_number INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT DEFAULT '',
+    summary TEXT DEFAULT '',
+    chapter_notes TEXT DEFAULT '',
+    status TEXT DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Outline drafts table
+CREATE TABLE outline_drafts (
+    id SERIAL PRIMARY KEY,
+    book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+    outline_content TEXT NOT NULL,
+    notes_used TEXT DEFAULT '',
+    version INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Event logs table
+CREATE TABLE event_logs (
+    id SERIAL PRIMARY KEY,
+    book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL,
+    message TEXT NOT NULL,
+    data JSONB DEFAULT '{}',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+3. Update `.env`:
+
+```
+DATABASE_TYPE=supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key
+```
+
 ## 📝 Example Workflow
 
 ```bash
@@ -181,5 +413,8 @@ python main.py compile 1
 
 ## 📄 License
 
-Mohsin Bin Ramzan - feel free to use and modify for your projects.
+MIT License - feel free to use and modify for your projects.
 
+---
+
+Created for the Automated Book Generation Trial Task
